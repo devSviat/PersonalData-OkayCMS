@@ -54,6 +54,16 @@ class ConsentLogTemplateTest extends ModuleTestCase
         self::assertMatchesRegularExpression('~Знеособлено</span>\s*<span class="sviat-pd-log__who"><time datetime="2026-11-06 08:00:00">~u', $html);
     }
 
+    /** До «Оновити» контролер журналу не зареєстровано, тож вкладка вела б на «контролер не знайдено». */
+    public function testLogTabHiddenBeforeUpdate(): void
+    {
+        $journal = 'controller=Sviat.PersonalData.ConsentLogAdmin';
+
+        self::assertStringNotContainsString($journal, $this->render(['sviat_pd_needs_update' => true]));
+        self::assertStringContainsString('controller=Sviat.PersonalData.DescriptionAdmin', $this->render(['sviat_pd_needs_update' => true]), 'вкладка форм лишається');
+        self::assertStringContainsString($journal, $this->render([]), 'контроль: після «Оновити» вкладку видно');
+    }
+
     public function testActionsHaveConfirmTextWithConsequences(): void
     {
         $html = $this->render(['sviat_pd_rows' => [self::row(1, 'active'), self::row(2, 'withdrawn')]]);

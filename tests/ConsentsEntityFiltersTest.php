@@ -19,14 +19,6 @@ use Modules\Sviat\PersonalData\Support\ModuleTestCase;
 /** Фільтри журналу згод: значення з адмінки йдуть лише параметрами, невідоме не розширює вибірку. */
 class ConsentsEntityFiltersTest extends ModuleTestCase
 {
-    public function testRecordFilterBindsInteger(): void
-    {
-        [$statement, $bind] = $this->apply('record', '15 OR 1=1');
-
-        self::assertStringContainsString('pdc.record_id = :pdc_record_id', $statement);
-        self::assertSame(15, $bind['pdc_record_id']);
-    }
-
     /** @return iterable<string, array{string, string}> */
     public static function states(): iterable
     {

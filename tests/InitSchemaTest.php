@@ -33,6 +33,8 @@ use Okay\Modules\Sviat\PersonalData\Forms\FormSettings;
 use Okay\Modules\Sviat\PersonalData\Init\Init;
 use Okay\Modules\Sviat\PersonalData\Init\SchemaMigration;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Psr\Log\AbstractLogger;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use ReflectionClass;
@@ -354,6 +356,55 @@ class InitSchemaTest extends ModuleTestCase
         }
 
         self::assertArrayNotHasKey(SchemaState::MARKER_KEY, $database->settings);
+    }
+
+    /** @return iterable<string, array{\Closure(FakeDatabase): void, ?string, string}> */
+    public static function failures(): iterable
+    {
+        yield 'таблиця не створилась' => [static fn() => null, ConsentsEntity::class, 'table(s) not created: __sviat__personal_data__consents'];
+        yield 'налаштування форми' => [static fn(FakeDatabase $db) => $db->rejectSettingsInsert = 'sviat__personal_data__form_feedback', null, 'settings not saved: sviat__personal_data__form_feedback'];
+        yield 'маркер' => [static fn(FakeDatabase $db) => $db->rejectSettingsInsert = SchemaState::MARKER_KEY, null, 'schema marker was not saved'];
+    }
+
+    /** Ядро показує причину лише у flash-повідомленні, тож у лозі застосунку вона мусить лишитися окремо. */
+    #[DataProvider('failures')]
+    public function testFailureReasonLoggedOnce(\Closure $break, ?string $refuse, string $reason): void
+    {
+        $database = $this->database(['pd_cart' => '1']);
+        $break($database);
+        $logged = [];
+        $migration = $this->migration($database, refuse: $refuse, logger: $this->recordingLogger($logged));
+
+        try {
+            $migration->run();
+            self::fail('міграція мусить упасти');
+        } catch (\RuntimeException $e) {
+            self::assertStringContainsString($reason, $e->getMessage());
+        }
+
+        self::assertSame(["error Sviat/PersonalData: migration to 1.1.0 stopped: $reason"], $logged);
+    }
+
+    public function testSuccessfulMigrationLogsNoError(): void
+    {
+        $logged = [];
+        $this->migration($this->database(['pd_cart' => '1']), logger: $this->recordingLogger($logged))->run();
+
+        self::assertSame([], $logged);
+    }
+
+    /** @param list<string> $logged */
+    private function recordingLogger(array &$logged): LoggerInterface
+    {
+        return new class ($logged) extends AbstractLogger {
+            /** @param list<string> $logged */
+            public function __construct(private array &$logged) {}
+
+            public function log($level, \Stringable|string $message, array $context = []): void
+            {
+                $this->logged[] = "$level $message";
+            }
+        };
     }
 
     public function testLeftoverCompiledFilesLoggedOnceWithCount(): void

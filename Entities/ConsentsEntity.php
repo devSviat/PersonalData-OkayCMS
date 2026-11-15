@@ -31,12 +31,6 @@ class ConsentsEntity extends Entity
     protected static $table = '__sviat__personal_data__consents';
     protected static $tableAlias = 'pdc';
 
-    protected function filter__record($recordId): void
-    {
-        $this->select->where('pdc.record_id = :pdc_record_id')
-            ->bindValue('pdc_record_id', (int) $recordId);
-    }
-
     /**
      * Порожній список не дає жодного рядка: автофільтр ядра на `[]` зникає й віддав би всю таблицю.
      *

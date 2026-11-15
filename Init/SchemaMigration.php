@@ -46,7 +46,7 @@ final readonly class SchemaMigration
 
         $missing = $this->schemaState->missingTables();
         if ($missing !== []) {
-            throw new \RuntimeException('Sviat/PersonalData: table(s) not created: ' . implode(', ', $missing));
+            $this->fail('table(s) not created: ' . implode(', ', $missing));
         }
     }
 
@@ -84,7 +84,7 @@ final readonly class SchemaMigration
             fn(string $key) => !$this->settings->has($key),
         ));
         if ($missing !== []) {
-            throw new \RuntimeException('Sviat/PersonalData: settings not saved: ' . implode(', ', $missing));
+            $this->fail('settings not saved: ' . implode(', ', $missing));
         }
     }
 
@@ -115,9 +115,20 @@ final readonly class SchemaMigration
         $this->settings->set(SchemaState::MARKER_KEY, SchemaState::MARKER_VERSION);
         $this->settings->initSettings();
         if ($this->settings->get(SchemaState::MARKER_KEY) !== SchemaState::MARKER_VERSION) {
-            throw new \RuntimeException('Sviat/PersonalData: schema marker was not saved');
+            $this->fail('schema marker was not saved');
         }
         $this->schemaState->forget();
+    }
+
+    /**
+     * Ядро показує текст винятку лише у flash-повідомленні адмінки й не логує його, а VIEW замість таблиці
+     * SQL-помилки не дає. Без цього рядка причина збою ніде не лишається.
+     */
+    private function fail(string $reason): never
+    {
+        $this->logger->error("Sviat/PersonalData: migration to 1.1.0 stopped: $reason");
+
+        throw new \RuntimeException("Sviat/PersonalData: $reason");
     }
 
     /** @return list<EntityField> */
