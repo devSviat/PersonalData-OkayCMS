@@ -2,12 +2,111 @@
     padding-top: 10px;
 }
 
-.data_processing_box {
-    padding: 0 0 12px 0;
-    width: 100%;
+/* Речення згоди — звичайний текстовий потік: мітка й посилання переносяться разом.
+   Ліве поле — місце для квадратика теми, тож рядки й помилка вирівняні по тексту, а не по квадратику. */
+.sviat-pd {
+    position: relative;
+    margin-bottom: 12px;
+    padding-left: 30px;
     text-align: left;
+    /* У flex-футері форми (кошик) блок займає місце зліва до кнопки від краю вмісту, а не посередині між
+       сусідами; вузький футер переносить його окремим рядком. Поза flex не діє. */
+    flex: 1 1 15em;
+    min-width: 0;
 }
 
-.data_processing_box__checkbox {
-    border-radius: 0;
+/* Тема ховає .checkbox__input через display:none, а таке поле jQuery Validate пропускає, і форма
+   блокується мовчки. Поле лишається в потоці фокуса, лише візуально приховане. */
+.sviat-pd .sviat-pd__input {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+}
+
+/* Тема робить label.checkbox блоком; тут вона стає частиною рядка. Від'ємний відступ повертає квадратик у ліве
+   поле, а вертикальні поля рядкового елемента розширюють зону дотику, не змінюючи висоти рядка: область вмісту
+   рядкового елемента не нижча за 1em, тож 1em + 2 × (22px − .5em) ≥ 44 px за будь-якого шрифту. */
+.sviat-pd .sviat-pd__label {
+    display: inline;
+    margin: 0 0 0 -30px;
+    padding: calc(22px - .5em) 0 calc(22px - .5em) 30px;
+}
+
+.sviat-pd .sviat-pd__label .checkbox__icon {
+    top: 50%;
+    margin-top: -11px;
+}
+
+/* svg несе клас теми .error (шаблон), тож currentColor квадратика — колір помилок теми. Без відмови рамку
+   задає тема, а фокус малюється системним кольором тексту. */
+.sviat-pd__input:focus-visible + .checkbox__icon {
+    outline: 2px solid CanvasText;
+    outline-offset: 2px;
+}
+
+/* aria-invalid ставить серверна відмова, клас .error — jQuery Validate під час відправки форми. */
+.sviat-pd__input[aria-invalid="true"] + .checkbox__icon,
+.sviat-pd__input.error + .checkbox__icon {
+    border-color: currentColor;
+}
+
+/* Відмова з фокусом — одна товща червона рамка замість рамки й кільця фокуса поруч. */
+.sviat-pd__input[aria-invalid="true"]:focus-visible + .checkbox__icon,
+.sviat-pd__input.error:focus-visible + .checkbox__icon {
+    outline: 0;
+    box-shadow: inset 0 0 0 1px currentColor;
+}
+
+/* Запасний квадратик для теми без чекбоксів OkayCMS; нульова специфічність :where() лишає перевагу правилам теми. */
+:where(.sviat-pd .checkbox__icon) {
+    position: absolute;
+    left: 0;
+    width: 22px;
+    height: 22px;
+    box-sizing: border-box;
+    border: 1px solid GrayText;
+    border-radius: 3px;
+}
+
+:where(.sviat-pd .checkbox__input:checked + .checkbox__icon .checkbox__mark) {
+    stroke: CanvasText;
+    stroke-width: 2px;
+}
+
+/* position: мітка теми позиційована (.checkbox), і без цього її поля дотику малювалися б і ловили дотик поверх
+   посилання та помилки, тож дотик до них ставив би галочку. */
+.sviat-pd__more,
+.sviat-pd__error {
+    position: relative;
+}
+
+.sviat-pd__more {
+    padding: calc(22px - .5em) 0;
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: .15em;
+    cursor: pointer;
+}
+
+.sviat-pd__more:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+}
+
+.sviat-pd__error {
+    display: block;
+}
+
+.sviat-pd__error:empty {
+    display: none;
 }

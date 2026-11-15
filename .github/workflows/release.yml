@@ -133,8 +133,73 @@ jobs:
                 f"failures {s.get('failures')}, errors {s.get('errors')}, skipped {s.get('skipped')}")
           PY
 
+  # Чекбокс форми ядра вставляє модифікація з module.json. Мертвий анкер у темі означає, що згода
+  # в цій формі мовчки не вимагається, тож кожна тема форку перевіряється окремо.
+  anchors:
+    name: anchors (${{ matrix.theme }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        theme: [okay_shop, vibe_shop]
+    steps:
+      - name: Check out the module
+        uses: actions/checkout@v7
+        with:
+          path: module
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: simplexml, xmlreader, pdo, json, curl, mbstring, zip, gd
+          coverage: none
+          tools: composer:v2
+
+      - name: Check out the fork
+        uses: actions/checkout@v7
+        with:
+          repository: devSviat/OkayCMS-Fork
+          ref: main
+          path: engine
+
+      - name: Install engine dependencies
+        working-directory: engine
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Place the module into the engine
+        run: |
+          set -euo pipefail
+          mkdir -p "engine/Okay/Modules/$VENDOR/$MODULE" "engine/tests/Modules/$VENDOR/$MODULE"
+          rsync -a --exclude=.git --exclude=.github --exclude=tests \
+            module/ "engine/Okay/Modules/$VENDOR/$MODULE/"
+          rsync -a module/tests/ "engine/tests/Modules/$VENDOR/$MODULE/"
+
+      - name: Anchors in ${{ matrix.theme }}
+        working-directory: engine
+        env:
+          OKAY_ACTIVE_THEME: ${{ matrix.theme }}
+        run: |
+          set -euo pipefail
+          test -d "design/$OKAY_ACTIVE_THEME"
+          vendor/bin/phpunit --display-skipped --log-junit junit.xml \
+            --filter testEveryCoreFormHasLiveAnchorInTheme "tests/Modules/$VENDOR/$MODULE/ConsentAnchorsTest.php"
+
+      - name: Test counts
+        if: always()
+        working-directory: engine
+        run: |
+          set -euo pipefail
+          test -f junit.xml || exit 0
+          python3 - junit.xml >> "$GITHUB_STEP_SUMMARY" <<'PY'
+          import sys, xml.etree.ElementTree as ET
+          s = ET.parse(sys.argv[1]).getroot()[0]
+          print(f"**anchors ${{ matrix.theme }}**: tests {s.get('tests')}, assertions {s.get('assertions')}, "
+                f"failures {s.get('failures')}, errors {s.get('errors')}, skipped {s.get('skipped')}")
+          PY
+
   release:
-    needs: [lint, verify]
+    needs: [lint, verify, anchors]
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     outputs:
