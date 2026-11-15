@@ -1,6 +1,6 @@
 {
-  "Okay": "4.5.2",
-  "version": "1.0.0",
+  "Okay": "4.5.3",
+  "version": "1.1.0",
   "moduleName": "Дозвіл на обробку персональних даних",
   "vendor": {
     "email": "devsviat@proton.me",
@@ -9,38 +9,11 @@
   "modifications": {
     "front": [
       {
-        "file": "callback.tpl",
-        "changes": [
-          {
-            "find": "<div class=\"form__body",
-            "appendAfter": "{if $settings->pd_callback}{confirm_personal_data_processing}{/if}"
-          }
-        ]
-      },
-      {
         "file": "cart.tpl",
         "changes": [
           {
-            "find": "<div class=\"data_processing_box_container",
-            "append": "{if $settings->pd_cart}{confirm_personal_data_processing}{/if}"
-          }
-        ]
-      },
-      {
-        "file": "feedback.tpl",
-        "changes": [
-          {
-            "find": "<div class=\"form__body",
-            "appendAfter": "{if $settings->pd_feedback}{confirm_personal_data_processing}{/if}"
-          }
-        ]
-      },
-      {
-        "file": "product.tpl",
-        "changes": [
-          {
-            "find": "<div class=\"form__body",
-            "appendAfter": "{if $settings->pd_comment_product}{confirm_personal_data_processing}{/if}"
+            "like": "(?s)^<(?:input\\b(?=.*type=\"submit\")|button\\b(?!.*type=\"(?:button|reset)\"))(?=.*name=\"checkout\")(?!.*aria-hidden)",
+            "appendBefore": "{confirm_personal_data_processing form=\"cart\"}"
           }
         ]
       },
@@ -48,8 +21,53 @@
         "file": "register.tpl",
         "changes": [
           {
-            "find": "<div class=\"form__body",
-            "appendAfter": "{if $settings->pd_register}{confirm_personal_data_processing}{/if}"
+            "like": "(?s)^<(?:input\\b(?=.*type=\"submit\")|button\\b(?!.*type=\"(?:button|reset)\"))(?=.*name=\"register\")(?!.*aria-hidden)",
+            "appendBefore": "{confirm_personal_data_processing form=\"register\"}"
+          }
+        ]
+      },
+      {
+        "file": "feedback.tpl",
+        "changes": [
+          {
+            "like": "(?s)^<(?:input\\b(?=.*type=\"submit\")|button\\b(?!.*type=\"(?:button|reset)\"))(?=.*name=\"feedback\")(?!.*aria-hidden)",
+            "appendBefore": "{confirm_personal_data_processing form=\"feedback\"}"
+          }
+        ]
+      },
+      {
+        "file": "callback.tpl",
+        "changes": [
+          {
+            "like": "(?s)^<(?:input\\b(?=.*type=\"submit\")|button\\b(?!.*type=\"(?:button|reset)\"))(?=.*name=\"callback\")(?!.*aria-hidden)",
+            "appendBefore": "{confirm_personal_data_processing form=\"callback\"}"
+          }
+        ]
+      },
+      {
+        "file": "product.tpl",
+        "changes": [
+          {
+            "like": "(?s)^<(?:input\\b(?=.*type=\"submit\")|button\\b(?!.*type=\"(?:button|reset)\"))(?=.*name=\"comment\")(?!.*aria-hidden)",
+            "appendBefore": "{confirm_personal_data_processing form=\"comment_product\"}"
+          }
+        ]
+      },
+      {
+        "file": "post.tpl",
+        "changes": [
+          {
+            "like": "(?s)^<(?:input\\b(?=.*type=\"submit\")|button\\b(?!.*type=\"(?:button|reset)\"))(?=.*name=\"comment\")(?!.*aria-hidden)",
+            "appendBefore": "{confirm_personal_data_processing form=\"comment_post\"}"
+          }
+        ]
+      },
+      {
+        "file": "fast_order_form.tpl",
+        "changes": [
+          {
+            "like": "(?s)^<(?:input\\b(?=.*type=\"submit\")|button\\b(?!.*type=\"(?:button|reset)\"))(?=.*fn_fast_order_submit)(?!.*aria-hidden)",
+            "appendBefore": "{confirm_personal_data_processing form=\"fast_order\"}"
           }
         ]
       }
