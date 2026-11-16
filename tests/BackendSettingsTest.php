@@ -213,9 +213,7 @@ class BackendSettingsTest extends ModuleTestCase
         foreach (['active', 'withdrawn', 'anonymized'] as $state) {
             $keys[] = "sviat__personal_data__state_$state";
         }
-        foreach (['active', 'withdrawn'] as $state) {
-            $keys[] = "sviat__personal_data__badge_$state";
-        }
+        $keys[] = 'sviat__personal_data__badge_withdrawn';
         foreach (['withdrawn', 'anonymized', 'refused', 'session'] as $flash) {
             $keys[] = "sviat__personal_data__flash_$flash";
         }

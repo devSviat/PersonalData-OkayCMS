@@ -24,7 +24,7 @@ use ReflectionClass;
 use Modules\Sviat\PersonalData\Support\ModuleTestCase;
 use Modules\Sviat\PersonalData\Support\RequestStub;
 
-/** Бейдж згоди на записі магазину: одна вибірка на сторінку списку, і з нього один клік до рядка журналу. */
+/** Бейдж відкликаної згоди на записі магазину: одна вибірка на сторінку списку, і з нього один клік до рядка журналу. */
 class ConsentBadgesTest extends ModuleTestCase
 {
     private FakeConsentsEntity $consents;
@@ -38,7 +38,7 @@ class ConsentBadgesTest extends ModuleTestCase
     {
         $pageIds = range(101, 120);
         foreach ($pageIds as $id) {
-            $this->consents->seed(['record_id' => $id]);
+            $this->consents->seed(['record_id' => $id, 'withdrawn_at' => '2026-11-05 12:00:00']);
         }
         $badges = $this->badges();
 
@@ -51,7 +51,7 @@ class ConsentBadgesTest extends ModuleTestCase
 
     public function testRecordWithoutConsentHasNoBadgeAndNoSecondQuery(): void
     {
-        $this->consents->seed(['record_id' => 5]);
+        $this->consents->seed(['record_id' => 5, 'withdrawn_at' => '2026-11-05 12:00:00']);
         $badges = $this->badges();
 
         self::assertNull($badges->forRecord('feedback', 6, [5, 6]));
@@ -61,7 +61,7 @@ class ConsentBadgesTest extends ModuleTestCase
 
     public function testTypesDoNotMix(): void
     {
-        $this->consents->seed(['record_id' => 5, 'record_type' => 'callback', 'form' => 'callback']);
+        $this->consents->seed(['record_id' => 5, 'record_type' => 'callback', 'form' => 'callback', 'withdrawn_at' => '2026-11-05 12:00:00']);
 
         self::assertNull($this->badges()->forRecord('feedback', 5, [5]));
         self::assertNotNull($this->badges()->forRecord('callback', 5, [5]));
@@ -74,6 +74,23 @@ class ConsentBadgesTest extends ModuleTestCase
 
         self::assertNull($badges->forRecord('feedback', 5, [5]));
         self::assertArrayHasKey('not_anonymized', $this->consents->finds[0]);
+    }
+
+    /** Без згоди форму не надіслати, тож чинна згода є в кожного запису: бейдж лише для відкликаної. */
+    public function testActiveConsentHasNoBadge(): void
+    {
+        $this->consents->seed(['record_id' => 5]);
+
+        self::assertNull($this->badges()->forRecord('feedback', 5, [5]));
+    }
+
+    /** Повторна згода після відкликання знову чинна: старий відкликаний рядок бейджа не дає. */
+    public function testRenewedConsentHidesOlderWithdrawal(): void
+    {
+        $this->consents->seed(['record_id' => 5, 'given_at' => '2026-11-01 10:00:00', 'withdrawn_at' => '2026-11-02 10:00:00']);
+        $this->consents->seed(['record_id' => 5, 'given_at' => '2026-11-03 10:00:00']);
+
+        self::assertNull($this->badges()->forRecord('feedback', 5, [5]));
     }
 
     public function testWithdrawnBadgeSaysWhoAndWhen(): void
@@ -90,7 +107,7 @@ class ConsentBadgesTest extends ModuleTestCase
     public function testBadgeLinksToItsJournalRow(): void
     {
         for ($i = 0; $i < 130; $i++) {
-            $this->consents->seed(['record_id' => 1000 + $i, 'given_at' => date('Y-m-d H:i:s', strtotime('2026-11-01 10:00:00') - $i * 60)]);
+            $this->consents->seed(['record_id' => 1000 + $i, 'withdrawn_at' => '2026-11-05 12:00:00', 'given_at' => date('Y-m-d H:i:s', strtotime('2026-11-01 10:00:00') - $i * 60)]);
         }
 
         $badge = $this->badges()->forRecord('feedback', 1120, [1120]);
@@ -109,7 +126,7 @@ class ConsentBadgesTest extends ModuleTestCase
     {
         $grouped = [];
         foreach (range(201, 212) as $i => $id) {
-            $this->consents->seed(['form' => 'back_in_stock', 'record_type' => 'back_in_stock', 'record_id' => $id]);
+            $this->consents->seed(['form' => 'back_in_stock', 'record_type' => 'back_in_stock', 'record_id' => $id, 'withdrawn_at' => '2026-11-05 12:00:00']);
             $grouped[700 + intdiv($i, 4)][] = (object) ['id' => (string) $id];
         }
         $design = $this->createStub(Design::class);

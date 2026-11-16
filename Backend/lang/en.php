@@ -104,7 +104,6 @@ $lang['sviat__personal_data__flash_anonymized'] = 'Consent anonymized';
 $lang['sviat__personal_data__flash_refused'] = 'Nothing was done: the row is gone or its state has changed. Reload the page.';
 $lang['sviat__personal_data__flash_session'] = 'The session has expired. Reload the page and try again.';
 
-$lang['sviat__personal_data__badge_active'] = 'Data processing consent';
 $lang['sviat__personal_data__badge_withdrawn'] = 'Consent withdrawn';
 $lang['sviat__personal_data__badge_open'] = 'Open in the consent log';
 
