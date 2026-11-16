@@ -104,7 +104,6 @@ $lang['sviat__personal_data__flash_anonymized'] = 'Согласие обезли
 $lang['sviat__personal_data__flash_refused'] = 'Действие не выполнено: строки уже нет или её состояние изменилось. Обновите страницу.';
 $lang['sviat__personal_data__flash_session'] = 'Сессия устарела. Обновите страницу и попробуйте ещё раз.';
 
-$lang['sviat__personal_data__badge_active'] = 'Согласие на обработку данных';
 $lang['sviat__personal_data__badge_withdrawn'] = 'Согласие отозвано';
 $lang['sviat__personal_data__badge_open'] = 'Открыть в журнале согласий';
 
