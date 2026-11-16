@@ -9,7 +9,7 @@ use Okay\Modules\Sviat\PersonalData\Entities\ConsentsEntity;
 use Okay\Modules\Sviat\PersonalData\Forms\FormRegistry;
 
 /**
- * Бейдж згоди на сторінці запису магазину. На списку перший бейдж читає згоди всіх записів сторінки
+ * Бейдж відкликаної згоди на сторінці запису магазину. На списку перший бейдж читає згоди всіх записів сторінки
  * одним запитом, решта бере їх із пам'яті запиту. Знеособлені рядки до записів не прив'язані й бейджа не дають.
  */
 class ConsentBadges
@@ -24,7 +24,7 @@ class ConsentBadges
 
     /**
      * @param list<int|string> $pageIds id усіх записів поточної сторінки списку
-     * @return object|null `{id, state, date, givenAt, withdrawnAt, withdrawnBy, url}`; `url` веде до рядка в журналі
+     * @return object|null `{id, state, date, givenAt, withdrawnAt, withdrawnBy, url}` лише для відкликаної згоди; `url` веде до рядка в журналі
      */
     public function forRecord(string $type, int $id, array $pageIds): ?object
     {
@@ -99,20 +99,24 @@ class ConsentBadges
         ]) ?: [];
 
         // Порядок журналу — новіші спершу, тож для запису лишається найсвіжіша згода.
+        $freshest = [];
         foreach ($rows as $row) {
-            $recordId = (int) $row->record_id;
-            $this->loaded[$type][$recordId] ??= self::badge($row);
+            $freshest[(int) $row->record_id] ??= $row;
+        }
+        // Без згоди форму не надіслати, тож чинна згода є в кожного запису й бейджем була б шумом.
+        foreach ($freshest as $recordId => $row) {
+            if ($row->withdrawn_at !== null) {
+                $this->loaded[$type][$recordId] = self::badge($row);
+            }
         }
     }
 
     private static function badge(object $row): object
     {
-        $withdrawn = $row->withdrawn_at !== null;
-
         return (object) [
             'id' => (int) $row->id,
-            'state' => $withdrawn ? ConsentsEntity::STATE_WITHDRAWN : ConsentsEntity::STATE_ACTIVE,
-            'date' => (string) ($withdrawn ? $row->withdrawn_at : $row->given_at),
+            'state' => ConsentsEntity::STATE_WITHDRAWN,
+            'date' => (string) $row->withdrawn_at,
             'givenAt' => (string) $row->given_at,
             'withdrawnAt' => $row->withdrawn_at,
             'withdrawnBy' => $row->withdrawn_by,

@@ -65,9 +65,11 @@
 
 .sviat-pd-badge { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 6px 0 2px; padding: 3px 10px; border-radius: var(--ok-radius-pill, 999px); font-size: 12px; font-weight: 600; line-height: 1.5; text-decoration: none; }
 .sviat-pd-badge time { font-weight: 400; }
-.sviat-pd-badge--active { background: var(--ok-success-soft, #e3f3e7); color: var(--ok-success, #227d3a); }
 .sviat-pd-badge--withdrawn { background: var(--ok-warning-soft, #fbeedc); color: var(--ok-warning, #a35a00); }
 a.sviat-pd-badge:hover { text-decoration: underline; }
+/* Посилання в рядку списку ядро фарбує й підкреслює правилом .okay_list .okay_list_boding.okay_list_comments_name a. */
+.okay_list .okay_list_boding a.sviat-pd-badge.sviat-pd-badge--withdrawn { color: var(--ok-warning, #a35a00); text-decoration: none; }
+.okay_list .okay_list_boding a.sviat-pd-badge.sviat-pd-badge--withdrawn:hover { color: var(--ok-warning, #a35a00); text-decoration: underline; }
 
 @media (max-width: 767px) {
     .sviat-pd-log .okay_list_head { display: none; }

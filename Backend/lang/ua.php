@@ -104,7 +104,6 @@ $lang['sviat__personal_data__flash_anonymized'] = 'Згоду знеособле
 $lang['sviat__personal_data__flash_refused'] = 'Дію не виконано: рядка вже немає або його стан змінився. Оновіть сторінку.';
 $lang['sviat__personal_data__flash_session'] = 'Сесія застаріла. Оновіть сторінку й спробуйте ще раз.';
 
-$lang['sviat__personal_data__badge_active'] = 'Згода на обробку даних';
 $lang['sviat__personal_data__badge_withdrawn'] = 'Згоду відкликано';
 $lang['sviat__personal_data__badge_open'] = 'Відкрити в журналі згод';
 
